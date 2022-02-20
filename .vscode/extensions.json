@@ -2,14 +2,14 @@
     // See http://go.microsoft.com/fwlink/?LinkId=827846
     // for the documentation about the extensions.json format
     "recommendations": [
-        "platformio.platformio-ide",
-        "davidanson.vscode-markdownlint",
-        "yzhang.markdown-all-in-one",
         "christian-kohler.path-intellisense",
-        "tabnine.tabnine-vscode",
+        "davidanson.vscode-markdownlint",
+        "platformio.platformio-ide",
         "sonarsource.sonarlint-vscode",
+        "streetsidesoftware.code-spell-checker",
+        "tabnine.tabnine-vscode",
         "visualstudioexptteam.vscodeintellicode",
-        "streetsidesoftware.code-spell-checker"
+        "yzhang.markdown-all-in-one"
     ],
     "unwantedRecommendations": [
         "ms-vscode.cpptools-extension-pack"
