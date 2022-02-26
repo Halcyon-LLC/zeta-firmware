@@ -5,11 +5,14 @@ repos:
     rev: v4.1.0
     hooks:
       - id: no-commit-to-branch
+        name: don't commit to main branch
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-added-large-files
+        name: check for large source and project files
         exclude_types: [binary, csv]
       - id: check-added-large-files
+        name: check for large test files
         args: ['--maxkb=10000']
       - id: detect-private-key
       - id: check-yaml
