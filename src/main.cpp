@@ -1,6 +1,6 @@
 #include "Arduino.h"
 
-#define FSR_PIN A7
+#define FSR_PIN A5
 #define BAUD_RATE 9600
 
 int fsr_reading;
