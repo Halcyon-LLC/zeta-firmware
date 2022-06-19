@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "zeta-firmware"
+version = "0.1.0"
+description = ""
+authors = ["Aki Zhou <aki@akizhou.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+matplotlib = "^3.5.2"
+ipykernel = "^6.13.0"
+pyserial = "^3.5"
+yapf = "^0.32.0"
+pre-commit = "^2.19.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
