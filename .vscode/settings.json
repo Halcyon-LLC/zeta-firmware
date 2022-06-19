@@ -4,5 +4,6 @@
     ],
     "editor.formatOnType": true,
     "editor.formatOnSave": true,
-    "C_Cpp.clang_format_fallbackStyle": "Google"
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    "python.formatting.provider": "yapf"
 }

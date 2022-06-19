@@ -17,3 +17,25 @@ repos:
       - id: detect-private-key
       - id: check-yaml
       - id: check-xml
+
+  - repo: local
+    hooks:
+      - id: autoflake
+        name: autoflake
+        entry: pautoflake
+        language: system
+        types: [python]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.5.2
+    hooks:
+      - id: isort
+        types: [python]
+
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: pflake8
+        language: system
+        types: [python]
