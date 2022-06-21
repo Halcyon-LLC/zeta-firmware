@@ -1,9 +1,14 @@
 {
-    "editor.rulers": [
-        120
-    ],
-    "editor.formatOnType": true,
-    "editor.formatOnSave": true,
-    "C_Cpp.clang_format_fallbackStyle": "Google",
-    "python.formatting.provider": "yapf"
+  "editor.rulers": [
+      120
+  ],
+  "editor.formatOnType": true,
+  "editor.formatOnSave": true,
+  "C_Cpp.clang_format_fallbackStyle": "Google",
+  "python.formatting.provider": "yapf",
+  "python.formatting.yapfArgs": [
+    "--style",
+    "{based_on_style: pep8, column_limit: 120}"
+  ],
+  "python.formatting.yapfPath": "./.venv/bin/yapf"
 }
