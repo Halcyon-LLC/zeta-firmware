@@ -48,16 +48,25 @@ def up_sample(raw_data):
     return highres_data
 
 
-def animate(i, ser):
-    plt.clf()
-    raw_data = np.fromstring(ser.readline().decode()[:-1], dtype=int, sep=',')
+class VelostatMat():
 
-    highres_data = up_sample(raw_data)
+    def __init__(self, serial_port: Serial, num_pwr: int, num_gnd: int, resolution_scale: int = 25):
+        self.serial_port = serial_port
+        self.num_pwr = num_pwr
+        self.num_gnd = num_gnd
+        self.resolution_scale = resolution_scale
 
-    plt.pcolormesh(highres_data, cmap='coolwarm')
+    def animate(self, i):
+        plt.clf()
+        raw_data = np.fromstring(self.serial_port.readline().decode()[:-1], dtype=int, sep=',')
+
+        highres_data = up_sample(raw_data)
+
+        plt.pcolormesh(highres_data, cmap='coolwarm')
 
 
 if __name__ == '__main__':
     with Serial(autodetect_port(), 9600) as serial_port:
-        ani = FuncAnimation(plt.gcf(), animate(ser=serial_port))
+        mat = VelostatMat(serial_port, 8, 4)
+        ani = FuncAnimation(plt.gcf(), mat.animate)
         plt.show()
