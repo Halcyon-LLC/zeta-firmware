@@ -5,15 +5,16 @@ description = ""
 authors = ["Aki Zhou <aki@akizhou.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.9,<3.10"
 
 [tool.poetry.dev-dependencies]
 yapf = "^0.32.0"
 pre-commit = "^2.19.0"
 matplotlib = "^3.5.2"
-ipykernel = "^6.13.0"
 pyserial = "^3.5"
 scipy = "^1.8.1"
+pandas = "^1.4.3"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
