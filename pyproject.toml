@@ -6,6 +6,7 @@ authors = ["Aki Zhou <aki@akizhou.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
+click = "^8.1.3"
 
 [tool.poetry.dev-dependencies]
 yapf = "^0.32.0"
