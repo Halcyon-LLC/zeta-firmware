@@ -1,6 +1,7 @@
 from sys import platform
 from functools import lru_cache
 
+import click
 from serial import Serial
 from serial.tools import list_ports
 import numpy as np
@@ -28,7 +29,7 @@ def autodetect_port():
 
 class VelostatMat():
 
-    def __init__(self, serial_port: Serial, num_pwr: int, num_gnd: int, resolution_scale: int = 25):
+    def __init__(self, serial_port: Serial, num_pwr: int, num_gnd: int, resolution_scale: int):
         self.serial_port = serial_port
         self.num_pwr = num_pwr
         self.num_gnd = num_gnd
@@ -72,8 +73,16 @@ class VelostatMat():
         plt.pcolormesh(highres_data, cmap='coolwarm')
 
 
-if __name__ == '__main__':
+@click.command()
+@click.option('--num_pwr', '-p', type=int, required=True)
+@click.option('--num_gnd', '-g', type=int, required=True)
+@click.option('--resolution_scale', '-s', type=int, default=25)
+def cli(num_pwr, num_gnd, resolution_scale):
     with Serial(autodetect_port(), 9600) as serial_port:
-        mat = VelostatMat(serial_port, 16, 16)
+        mat = VelostatMat(serial_port, num_pwr, num_gnd, resolution_scale)
         ani = FuncAnimation(plt.gcf(), mat.animate)
         plt.show()
+
+
+if __name__ == '__main__':
+    cli()
