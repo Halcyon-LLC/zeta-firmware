@@ -35,6 +35,17 @@ class VelostatMat():
         self.num_gnd = num_gnd
         self.resolution_scale = resolution_scale
 
+        self.init_voltage_readings()
+
+    def init_voltage_readings(self):
+        samples = 3
+        vouts = np.zeros(self.num_gnd * self.num_pwr)
+
+        for _ in range(samples):
+            vouts += self.get_readings()
+
+        self.initial_vout = vouts / samples
+
     @lru_cache(maxsize=2)
     def _setup_coordinates(self, num_rows, num_cols, scale):
         return [
@@ -52,7 +63,16 @@ class VelostatMat():
         Returns:
             NDArray: 1 x N matrix where N is the number of pressure points
         """
-        return np.fromstring(self.serial_port.readline().decode()[:-1], dtype=dtype, sep=',')
+        while True:
+            try:
+                vin, vouts = self.serial_port.readline().decode()[:-1].split(',', maxsplit=1)
+            except UnicodeDecodeError:
+                continue
+
+            self.vin = int(vin)
+            vouts = np.fromstring(vouts, dtype=dtype, sep=',')
+            if vouts.shape[0] == self.num_gnd * self.num_pwr:
+                return vouts
 
     def up_sample(self, data, type='linear'):
         num_rows, num_cols = self.num_gnd, self.num_pwr
@@ -60,13 +80,18 @@ class VelostatMat():
 
         f = interp2d(x, y, data, kind=type)
 
-        return np.rot90(np.flip(f(xx, yy).T, axis=1))
+        return f(xx, yy).T
 
     def animate(self, i):
         plt.clf()
 
-        raw_data = self.get_readings()
-        highres_data = self.up_sample(raw_data, type='cubic')
+        raw_data_delta = self.get_readings() - self.initial_vout
+        raw_data_delta = np.where(raw_data_delta > self.vin * 0.1, raw_data_delta, 0)
+
+        if self.resolution_scale > 1:
+            highres_data = self.up_sample(raw_data_delta, type='cubic')
+        else:
+            highres_data = np.reshape(raw_data_delta, (self.num_gnd, self.num_pwr))
 
         fig = plt.figure(1)
         fig.set_size_inches(8, 8)
@@ -78,7 +103,7 @@ class VelostatMat():
 @click.option('--num_gnd', '-g', type=int, required=True)
 @click.option('--resolution_scale', '-s', type=int, default=25)
 def cli(num_pwr, num_gnd, resolution_scale):
-    with Serial(autodetect_port(), 9600) as serial_port:
+    with Serial(autodetect_port(), 115200) as serial_port:
         mat = VelostatMat(serial_port, num_pwr, num_gnd, resolution_scale)
         ani = FuncAnimation(plt.gcf(), mat.animate)
         plt.show()

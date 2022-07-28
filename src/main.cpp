@@ -2,53 +2,50 @@
 #include "Mux.h"
 using namespace admux;
 
-#define ENABLE_MUX_PIN 0
-#define DEMUX_SEL0 23
-#define DEMUX_SEL1 25
-#define DEMUX_SEL2 27
-#define DEMUX_SEL3 29
-#define MUX_SEL0 47
-#define MUX_SEL1 49
-#define MUX_SEL2 51
-#define MUX_SEL3 53
-#define ANALOG_READ_PIN A15
+#define ENABLE 30
+#define IN_S0 52
+#define IN_S1 50
+#define IN_S2 22
+#define IN_S3 26
+#define OUT_S0 46
+#define OUT_S1 48
+#define OUT_S2 28
+#define OUT_S3 24
 
-const int NUM_GND = 4;
-const int NUM_PWR = 8;
+#define VOUT_M1 A0
+#define VIN_M1 A1
 
-Mux power(Pinset(MUX_SEL0, MUX_SEL1, MUX_SEL2, MUX_SEL3));
-Mux ground(Pinset(DEMUX_SEL0, DEMUX_SEL1, DEMUX_SEL2, DEMUX_SEL3));
+const int NUM_GND = 16;
+const int NUM_PWR = 16;
+
+Mux power(Pinset(IN_S0, IN_S1, IN_S2, IN_S3));
+Mux ground(Pinset(OUT_S0, OUT_S1, OUT_S2, OUT_S3));
 
 void setup() {
-  Serial.begin(9600);
-  // Serial.begin(115200);
-  pinMode(ENABLE_MUX_PIN, OUTPUT);
+  Serial.begin(115200);
 
-  pinMode(MUX_SEL0, OUTPUT);
-  pinMode(MUX_SEL1, OUTPUT);
-  pinMode(MUX_SEL2, OUTPUT);
-  pinMode(MUX_SEL3, OUTPUT);
-  pinMode(DEMUX_SEL0, OUTPUT);
-  pinMode(DEMUX_SEL1, OUTPUT);
-  pinMode(DEMUX_SEL2, OUTPUT);
-  pinMode(DEMUX_SEL3, OUTPUT);
+  pinMode(ENABLE, OUTPUT);
+  pinMode(IN_S0, OUTPUT);
+  pinMode(IN_S1, OUTPUT);
+  pinMode(IN_S2, OUTPUT);
+  pinMode(IN_S3, OUTPUT);
+  pinMode(OUT_S0, OUTPUT);
+  pinMode(OUT_S1, OUTPUT);
+  pinMode(OUT_S2, OUTPUT);
+  pinMode(OUT_S3, OUTPUT);
+}
 
-  // digitalWrite(MUX_SEL1, LOW);
-  // digitalWrite(MUX_SEL2, LOW);
-  digitalWrite(MUX_SEL3, LOW);
-  // digitalWrite(DEMUX_SEL1, LOW);
-  digitalWrite(DEMUX_SEL2, LOW);
-  digitalWrite(DEMUX_SEL3, LOW);
+int get_Vin() {
+  power.write(HIGH, 0);
+  ground.write(HIGH, 0);
+
+  return analogRead(VIN_M1);
 }
 
 void loop() {
+  int vin = get_Vin();
+
   int readings[NUM_GND * NUM_PWR] = {};
-  digitalWrite(ENABLE_MUX_PIN, LOW);
-  digitalWrite(DEMUX_SEL0, LOW);
-  digitalWrite(DEMUX_SEL1, LOW);
-  digitalWrite(DEMUX_SEL2, LOW);
-  digitalWrite(MUX_SEL0, LOW);
-  digitalWrite(MUX_SEL1, LOW);
 
   // Iterate through all DEMUX channels
   int pointIndex = 0;
@@ -60,16 +57,14 @@ void loop() {
       // Read each spot and store it
       power.write(HIGH, col);
       pointIndex = (row * NUM_PWR) + col;
-      readings[pointIndex] = analogRead(ANALOG_READ_PIN);
+      readings[pointIndex] = analogRead(VOUT_M1);
     }
   }
 
-  String dataSent = "";
+  String dataSent = String(vin) + ',';
   for (int i = 0; i < (NUM_GND * NUM_PWR); i++) {
     char delimiter = (i + 1) < (NUM_GND * NUM_PWR) ? ',' : '\n';
     dataSent = dataSent + String(readings[i]) + delimiter;
   }
   Serial.print(dataSent);
-
-  delay(200);
 }
