@@ -15,6 +15,8 @@ using namespace admux;
 #define VOUT_M1 A0
 #define VIN_M1 A1
 
+#define STATUS_LED 21
+
 const int NUM_GND = 16;
 const int NUM_PWR = 16;
 
@@ -33,6 +35,7 @@ void setup() {
   pinMode(OUT_S1, OUTPUT);
   pinMode(OUT_S2, OUTPUT);
   pinMode(OUT_S3, OUTPUT);
+  pinMode(STATUS_LED, OUTPUT);
 }
 
 int get_Vin() {
@@ -42,7 +45,7 @@ int get_Vin() {
   return analogRead(VIN_M1);
 }
 
-void loop() {
+void scan_velostat() {
   int vin = get_Vin();
 
   int readings[NUM_GND * NUM_PWR] = {};
@@ -50,6 +53,8 @@ void loop() {
   // Iterate through all DEMUX channels
   int pointIndex = 0;
   for (int row = 0; row < NUM_GND; row++) {
+    digitalWrite(STATUS_LED, HIGH);
+
     // Select the row and pass voltage
     ground.write(HIGH, row);
 
@@ -59,6 +64,8 @@ void loop() {
       pointIndex = (row * NUM_PWR) + col;
       readings[pointIndex] = analogRead(VOUT_M1);
     }
+
+    digitalWrite(STATUS_LED, LOW);
   }
 
   String dataSent = String(vin) + ',';
@@ -67,4 +74,13 @@ void loop() {
     dataSent = dataSent + String(readings[i]) + delimiter;
   }
   Serial.print(dataSent);
+}
+
+void loop() {
+  if (Serial.read() == 'c') {
+    scan_velostat();
+    Serial.flush();
+  }
+
+  digitalWrite(STATUS_LED, HIGH);
 }

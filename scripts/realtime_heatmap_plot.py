@@ -65,14 +65,16 @@ class VelostatMat():
         """
         while True:
             try:
+                self.serial_port.write(b'c')
                 vin, vouts = self.serial_port.readline().decode()[:-1].split(',', maxsplit=1)
-            except UnicodeDecodeError:
+                print(vin)
+                self.vin = int(vin)
+                vouts = np.fromstring(vouts, dtype=dtype, sep=',')
+                if vouts.shape[0] == self.num_gnd * self.num_pwr:
+                    return vouts
+            except ValueError as e:
+                print(e)
                 continue
-
-            self.vin = int(vin)
-            vouts = np.fromstring(vouts, dtype=dtype, sep=',')
-            if vouts.shape[0] == self.num_gnd * self.num_pwr:
-                return vouts
 
     def up_sample(self, data, type='linear'):
         num_rows, num_cols = self.num_gnd, self.num_pwr
@@ -80,7 +82,10 @@ class VelostatMat():
 
         f = interp2d(x, y, data, kind=type)
 
-        return f(xx, yy).T
+        return f(xx, yy)
+
+    def orientate(self, data: np.ndarray):
+        return np.rot90(data, k=3)
 
     def animate(self, i):
         plt.clf()
@@ -89,9 +94,9 @@ class VelostatMat():
         raw_data_delta = np.where(raw_data_delta > self.vin * 0.1, raw_data_delta, 0)
 
         if self.resolution_scale > 1:
-            highres_data = self.up_sample(raw_data_delta, type='cubic')
+            highres_data = self.orientate(self.up_sample(raw_data_delta, type='cubic'))
         else:
-            highres_data = np.reshape(raw_data_delta, (self.num_gnd, self.num_pwr))
+            highres_data = self.orientate(np.reshape(raw_data_delta, (self.num_gnd, self.num_pwr)).T)
 
         fig = plt.figure(1)
         fig.set_size_inches(8, 8)
@@ -103,7 +108,7 @@ class VelostatMat():
 @click.option('--num_gnd', '-g', type=int, required=True)
 @click.option('--resolution_scale', '-s', type=int, default=25)
 def cli(num_pwr, num_gnd, resolution_scale):
-    with Serial(autodetect_port(), 115200) as serial_port:
+    with Serial(autodetect_port(), 115200, timeout=1) as serial_port:
         mat = VelostatMat(serial_port, num_pwr, num_gnd, resolution_scale)
         ani = FuncAnimation(plt.gcf(), mat.animate)
         plt.show()
