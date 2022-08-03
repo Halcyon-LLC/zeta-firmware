@@ -76,7 +76,7 @@ class VelostatMat():
                 vouts_M1, vouts_M2 = [int(vouts[i])
                                       for i in range(0, length, 2)], [int(vouts[i]) for i in range(1, length, 2)]
                 vouts = [
-                    vouts_M1[(row * 16):((row + 1) * 16)] + vouts_M2[(row * 16):((row + 1) * 16)] for row in range(16)
+                    vouts_M1[(row * 16):((row + 1) * 16)] + vouts_M2[(row * 16):((row + 1) * 16)][::-1] for row in range(16)
                 ]
                 vouts = np.asarray(vouts)
 
@@ -85,7 +85,7 @@ class VelostatMat():
                 if vouts.shape == (16, 32):
                     return vouts
 
-            except ValueError as e:
+            except (ValueError, TypeError) as e:
                 print(e)
                 continue
 
