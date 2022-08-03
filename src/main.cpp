@@ -12,10 +12,12 @@ using namespace admux;
 #define OUT_S2 28
 #define OUT_S3 24
 
+#define STATUS_LED 21
+
 #define VOUT_M1 A0
 #define VIN_M1 A1
-
-#define STATUS_LED 21
+#define VOUT_M2 A4
+#define VIN_M2 A5
 
 const int NUM_GND = 16;
 const int NUM_PWR = 16;
@@ -38,17 +40,22 @@ void setup() {
   pinMode(STATUS_LED, OUTPUT);
 }
 
-int get_Vin() {
+int* get_Vins(int* vins) {
   power.write(HIGH, 0);
   ground.write(HIGH, 0);
 
-  return analogRead(VIN_M1);
+  vins[0] = analogRead(VIN_M1);
+  vins[1] = analogRead(VIN_M2);
+
+  return vins;
 }
 
 void scan_velostat() {
-  int vin = get_Vin();
+  int* vins = new int[2];
+  vins = get_Vins(vins);
 
-  int readings[NUM_GND * NUM_PWR] = {};
+  int readingsM1[NUM_GND * NUM_PWR] = {};
+  int readingsM2[NUM_GND * NUM_PWR] = {};
 
   // Iterate through all DEMUX channels
   int pointIndex = 0;
@@ -61,23 +68,25 @@ void scan_velostat() {
     for (int col = 0; col < NUM_PWR; col++) {
       // Read each spot and store it
       power.write(HIGH, col);
-      pointIndex = (row * NUM_PWR) + col;
-      readings[pointIndex] = analogRead(VOUT_M1);
+      pointIndex++;
+      readingsM1[pointIndex] = analogRead(VOUT_M1);
+      readingsM2[pointIndex] = analogRead(VOUT_M2);
     }
 
     digitalWrite(STATUS_LED, LOW);
   }
 
-  String dataSent = String(vin) + ',';
+  // Send data
+  String dataSent = String(vins[0]) + ',' + String(vins[1]) + ',';
   for (int i = 0; i < (NUM_GND * NUM_PWR); i++) {
     char delimiter = (i + 1) < (NUM_GND * NUM_PWR) ? ',' : '\n';
-    dataSent = dataSent + String(readings[i]) + delimiter;
+    dataSent += String(readingsM1[i]) + ',' + String(readingsM2[i]) + delimiter;
   }
   Serial.print(dataSent);
 }
 
 void loop() {
-  if (Serial.read() == 'c') {
+  if (Serial.read() == 0xFF) {
     scan_velostat();
     Serial.flush();
   }
